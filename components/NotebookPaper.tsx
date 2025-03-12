@@ -11,20 +11,19 @@ interface NotebookPaperProps extends BoxProps {
 
 export default function NotebookPaper({ ...props }: NotebookPaperProps) {
   const { getGroceryList, updateGroceryList, clearGroceryList } = useStore();
-  const [items, setItems] = useState<string[]>(Array(20).fill(''));
+  const [items, setItems] = useState<string[]>([]);
 
   useEffect(() => {
     const savedItems = getGroceryList();
-    if (savedItems.length > 0) {
-      setItems(savedItems.concat(Array(20 - savedItems.length).fill('')));
-    }
-  }, [getGroceryList]);
+    setItems([...savedItems, ...Array(20 - savedItems.length).fill('')]);
+  }, []);
 
   const handleChange = (index: number, value: string) => {
     const newItems = [...items];
     newItems[index] = value;
-    setItems(newItems);
-    updateGroceryList(newItems.filter(Boolean));
+    const validItems = newItems.filter(Boolean);
+    setItems([...validItems, ...Array(20 - validItems.length).fill('')]);
+    updateGroceryList(validItems);
   };
 
   const handleClear = () => {

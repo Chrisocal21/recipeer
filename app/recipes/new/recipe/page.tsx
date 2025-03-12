@@ -20,37 +20,51 @@ import {
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
+  useToast,
 } from '@chakra-ui/react';
 import Title from '@/components/Title';
 
 export default function NewRecipeFormPage() {
   const router = useRouter();
   const addRecipe = useStore(state => state.addRecipe);
+  const toast = useToast();
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    
-    const recipe = {
-      name: formData.get('name') as string,
-      description: formData.get('description') as string,
-      ingredients: formData.get('ingredients') as string,
-      shoppingList: formData.get('shoppingList') as string,
-      instructions: formData.get('instructions') as string,
-      originStory: formData.get('originStory') as string,
-      chefNotes: formData.get('chefNotes') as string,
-      prepTime: Number(formData.get('prepTime')),
-      cookTime: Number(formData.get('cookTime')),
-      nutrition: {
-        calories: Number(formData.get('calories')),
-        protein: Number(formData.get('protein')),
-        carbs: Number(formData.get('carbs')),
-        fat: Number(formData.get('fat')),
-      }
-    };
-    
-    addRecipe(recipe);
-    router.push('/recipes');
+    try {
+      const formData = new FormData(e.currentTarget);
+      
+      const recipe = {
+        name: formData.get('name') as string,
+        description: formData.get('description') as string,
+        ingredients: formData.get('ingredients') as string,
+        instructions: formData.get('instructions') as string,
+        originStory: formData.get('originStory') as string,
+        chefNotes: formData.get('chefNotes') as string,
+        prepTime: Number(formData.get('prepTime')),
+        cookTime: Number(formData.get('cookTime')),
+        nutrition: {
+          calories: Number(formData.get('calories')) || 0,
+          protein: Number(formData.get('protein')) || 0,
+          carbs: Number(formData.get('carbs')) || 0,
+          fat: Number(formData.get('fat')) || 0,
+        }
+      };
+      
+      addRecipe(recipe);
+      toast({
+        title: 'Recipe created successfully',
+        status: 'success',
+        duration: 2000,
+      });
+      router.push('/recipes');
+    } catch (error) {
+      toast({
+        title: 'Failed to create recipe',
+        status: 'error',
+        duration: 2000,
+      });
+    }
   };
 
   return (
@@ -143,20 +157,6 @@ Example:
 1 tsp salt
 3 large eggs, room temperature"
                 minH="200px"
-              />
-            </FormControl>
-
-            {/* Shopping List */}
-            <FormControl>
-              <FormLabel color="gray.300">Shopping List (Simplified)</FormLabel>
-              <Textarea
-                name="shoppingList"
-                placeholder="A simplified shopping list:
-Example:
-Flour
-Salt
-Eggs"
-                minH="150px"
               />
             </FormControl>
 

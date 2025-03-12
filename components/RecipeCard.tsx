@@ -1,6 +1,6 @@
 'use client';
 
-import { Box, Heading, Text, VStack, Icon, HStack, Button } from '@chakra-ui/react';
+import { Box, Heading, Text, VStack, Icon, HStack, Button, useToast } from '@chakra-ui/react';
 import { StarIcon, TimeIcon, DeleteIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useStore } from '@/store/useRecipeStore';
@@ -18,6 +18,7 @@ export interface RecipeCardProps {
 }
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
+  const toast = useToast();
   const { toggleFavorite, deleteRecipe } = useStore(state => ({
     toggleFavorite: state.toggleFavorite,
     deleteRecipe: state.deleteRecipe
@@ -28,10 +29,23 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
     toggleFavorite(recipe.id);
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (window.confirm('Are you sure you want to delete this recipe?')) {
-      deleteRecipe(recipe.id);
+      try {
+        deleteRecipe(recipe.id);
+        toast({
+          title: 'Recipe deleted',
+          status: 'success',
+          duration: 2000,
+        });
+      } catch (error) {
+        toast({
+          title: 'Failed to delete recipe',
+          status: 'error',
+          duration: 2000,
+        });
+      }
     }
   };
 

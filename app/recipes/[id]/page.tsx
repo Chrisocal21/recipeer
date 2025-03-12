@@ -11,16 +11,44 @@ import {
   HStack,
   Icon,
   Button,
+  useToast,
 } from '@chakra-ui/react';
-import { TimeIcon, StarIcon } from '@chakra-ui/icons';
+import { TimeIcon, StarIcon, AddIcon } from '@chakra-ui/icons';
 import Title from '@/components/Title';
 import { useStore } from '@/store/useRecipeStore';
 
 export default function RecipeDetailPage({ params }: { params: { id: string } }) {
+  const toast = useToast();
   const recipe = useStore(state => 
     state.recipes.find(r => r.id === parseInt(params.id))
   );
-  const toggleFavorite = useStore(state => state.toggleFavorite);
+  const { toggleFavorite, updateGroceryList, getGroceryList } = useStore();
+
+  const handleAddToGroceryList = () => {
+    if (!recipe) return;
+    try {
+      const currentList = getGroceryList();
+      const newIngredients = recipe.ingredients.split('\n')
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(item => `[Recipe ${recipe.id}] ${item}`);
+      
+      const combinedList = Array.from(new Set([...currentList, ...newIngredients]));
+      updateGroceryList(combinedList);
+      
+      toast({
+        title: 'Added to grocery list',
+        status: 'success',
+        duration: 2000,
+      });
+    } catch (error) {
+      toast({
+        title: 'Failed to add to grocery list',
+        status: 'error',
+        duration: 2000,
+      });
+    }
+  };
 
   if (!recipe) {
     return (
@@ -37,19 +65,28 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
         
         <Box bg="gray.800" p={8} borderRadius="xl" shadow="md">
           <VStack spacing={6} align="stretch">
-            {/* Header with favorite button */}
+            {/* Header with buttons */}
             <HStack justify="space-between">
               <Box>
                 <Text color="gray.400" fontSize="sm">Recipe by Chef</Text>
               </Box>
-              <Button
-                leftIcon={<StarIcon />}
-                variant="ghost"
-                colorScheme={recipe.isFavorite ? "yellow" : "gray"}
-                onClick={() => toggleFavorite(recipe.id)}
-              >
-                {recipe.isFavorite ? 'Favorited' : 'Add to Favorites'}
-              </Button>
+              <HStack spacing={4}>
+                <Button
+                  leftIcon={<StarIcon />}
+                  variant="ghost"
+                  colorScheme={recipe.isFavorite ? "yellow" : "gray"}
+                  onClick={() => toggleFavorite(recipe.id)}
+                >
+                  {recipe.isFavorite ? 'Favorited' : 'Add to Favorites'}
+                </Button>
+                <Button
+                  leftIcon={<AddIcon />}
+                  colorScheme="teal"
+                  onClick={handleAddToGroceryList}
+                >
+                  Add to Grocery List
+                </Button>
+              </HStack>
             </HStack>
 
             <Divider />

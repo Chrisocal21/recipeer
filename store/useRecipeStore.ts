@@ -6,7 +6,6 @@ export interface Recipe {
   name: string;
   description: string;
   ingredients: string;
-  shoppingList: string;
   instructions: string;
   originStory?: string;
   chefNotes?: string;
@@ -81,7 +80,12 @@ export const useStore = create<UserStore>()(
         return lists.length > 0 ? lists[lists.length - 1].items : [];
       },
       deleteRecipe: (id) => set((state) => ({
-        recipes: state.recipes.filter(recipe => recipe.id !== id)
+        recipes: state.recipes.filter(recipe => recipe.id !== id),
+        mealPlans: state.mealPlans.filter(mp => mp.recipeId !== id),
+        groceryLists: state.groceryLists.map(list => ({
+          ...list,
+          items: list.items.filter(item => !item.startsWith(`[Recipe ${id}]`))
+        }))
       })),
       clearGroceryList: () => set((state) => ({
         groceryLists: []
