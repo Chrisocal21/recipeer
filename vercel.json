@@ -4,5 +4,6 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "cleanUrls": true,
-  "public": true
+  "public": true,
+  "regions": ["sfo1"]
 }
