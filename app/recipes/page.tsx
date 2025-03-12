@@ -3,25 +3,10 @@
 import { Container, SimpleGrid, VStack } from '@chakra-ui/react';
 import Title from '@/components/Title';
 import RecipeCard from '@/components/RecipeCard';
-import { useEffect, useState } from 'react';
-
-interface Recipe {
-  id: number;
-  name: string;
-  description: string;
-  imageUrl?: string;
-}
+import { useStore } from '@/store/useRecipeStore';
 
 export default function RecipesPage() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-
-  useEffect(() => {
-    // Placeholder for API call
-    setRecipes([
-      { id: 1, name: 'Pasta Carbonara', description: 'Classic Italian pasta dish' },
-      { id: 2, name: 'Chicken Curry', description: 'Spicy chicken curry' },
-    ]);
-  }, []);
+  const recipes = useStore((state) => state.recipes);
 
   return (
     <Container maxW="container.xl" py={8}>

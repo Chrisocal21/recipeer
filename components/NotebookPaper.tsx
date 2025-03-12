@@ -1,19 +1,35 @@
 'use client';
 
-import { Box, Input, VStack, BoxProps } from '@chakra-ui/react';
-import React, { useState } from 'react';
+import { Box, Input, VStack, BoxProps, Button, HStack } from '@chakra-ui/react';
+import { DeleteIcon } from '@chakra-ui/icons';
+import React, { useEffect, useState } from 'react';
+import { useStore } from '@/store/useRecipeStore';
 
 interface NotebookPaperProps extends BoxProps {
   // Add any additional props here
 }
 
 export default function NotebookPaper({ ...props }: NotebookPaperProps) {
+  const { getGroceryList, updateGroceryList, clearGroceryList } = useStore();
   const [items, setItems] = useState<string[]>(Array(20).fill(''));
+
+  useEffect(() => {
+    const savedItems = getGroceryList();
+    if (savedItems.length > 0) {
+      setItems(savedItems.concat(Array(20 - savedItems.length).fill('')));
+    }
+  }, [getGroceryList]);
 
   const handleChange = (index: number, value: string) => {
     const newItems = [...items];
     newItems[index] = value;
     setItems(newItems);
+    updateGroceryList(newItems.filter(Boolean));
+  };
+
+  const handleClear = () => {
+    setItems(Array(20).fill(''));
+    clearGroceryList();
   };
 
   return (
@@ -25,6 +41,17 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
       position="relative"
       {...props}
     >
+      <HStack justify="flex-end" mb={4}>
+        <Button
+          leftIcon={<DeleteIcon />}
+          colorScheme="red"
+          variant="ghost"
+          size="sm"
+          onClick={handleClear}
+        >
+          Clear List
+        </Button>
+      </HStack>
       <VStack spacing={4}>
         {items.map((item, index) => (
           <Box
