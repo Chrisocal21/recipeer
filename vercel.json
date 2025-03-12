@@ -10,5 +10,9 @@
     "deploymentEnabled": {
       "main": true
     }
-  }
+  },
+  "alias": ["recipeer.vercel.app"],
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
 }
