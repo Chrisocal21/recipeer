@@ -13,7 +13,7 @@ import {
   Button,
   useToast,
 } from '@chakra-ui/react';
-import { TimeIcon, StarIcon, AddIcon } from '@chakra-ui/icons';
+import { TimeIcon, StarIcon, AddIcon, ExternalLinkIcon } from '@chakra-ui/icons';
 import Title from '@/components/Title';
 import { useStore } from '@/store/useRecipeStore';
 
@@ -50,6 +50,36 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
     }
   };
 
+  const handleShare = async () => {
+    if (!recipe) return;
+    const shareId = useStore.getState().shareRecipe(parseInt(params.id));
+    const shareUrl = `${window.location.origin}/recipes/share/${shareId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: recipe.name,
+          text: `Check out this recipe for ${recipe.name} by ${recipe.author}`,
+          url: shareUrl
+        });
+      } catch (error) {
+        // Fallback to clipboard
+        navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: 'Share link copied to clipboard',
+          status: 'success'
+        });
+      }
+    } else {
+      // Fallback to clipboard
+      navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: 'Share link copied to clipboard',
+        status: 'success'
+      });
+    }
+  };
+
   if (!recipe) {
     return (
       <Container maxW="container.xl" py={8}>
@@ -78,6 +108,13 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
                   onClick={() => toggleFavorite(recipe.id)}
                 >
                   {recipe.isFavorite ? 'Favorited' : 'Add to Favorites'}
+                </Button>
+                <Button
+                  leftIcon={<ExternalLinkIcon />}
+                  colorScheme="blue"
+                  onClick={handleShare}
+                >
+                  Share Recipe
                 </Button>
                 <Button
                   leftIcon={<AddIcon />}

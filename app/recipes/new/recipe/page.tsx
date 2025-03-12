@@ -48,7 +48,8 @@ export default function NewRecipeFormPage() {
           protein: Number(formData.get('protein')) || 0,
           carbs: Number(formData.get('carbs')) || 0,
           fat: Number(formData.get('fat')) || 0,
-        }
+        },
+        author: formData.get('author') as string,
       };
       
       addRecipe(recipe);
@@ -74,6 +75,15 @@ export default function NewRecipeFormPage() {
         
         <Box as="form" bg="gray.800" p={8} borderRadius="xl" shadow="md" onSubmit={handleSubmit}>
           <VStack spacing={8} align="stretch">
+            <FormControl isRequired>
+              <FormLabel color="gray.300">Author</FormLabel>
+              <Input
+                name="author"
+                placeholder="Your name or username"
+                size="lg"
+              />
+            </FormControl>
+
             {/* Recipe Title */}
             <FormControl isRequired>
               <FormLabel color="gray.300">Recipe Title</FormLabel>

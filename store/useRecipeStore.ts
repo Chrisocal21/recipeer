@@ -18,6 +18,8 @@ export interface Recipe {
     fat: number;
   };
   isFavorite: boolean;
+  author: string;
+  shareId?: string;
 }
 
 interface MealPlan {
@@ -46,6 +48,8 @@ interface UserStore {
   getGroceryList: () => string[];
   deleteRecipe: (id: number) => void;
   clearGroceryList: () => void;
+  shareRecipe: (id: number) => string;
+  importRecipe: (sharedRecipe: Omit<Recipe, 'id' | 'isFavorite'>) => void;
 }
 
 export const useStore = create<UserStore>()(
@@ -90,6 +94,22 @@ export const useStore = create<UserStore>()(
       clearGroceryList: () => set((state) => ({
         groceryLists: []
       })),
+      shareRecipe: (id) => {
+        const recipe = get().recipes.find(r => r.id === id);
+        if (!recipe) return '';
+        const { id: _id, isFavorite: _fav, ...shareableRecipe } = recipe;
+        return btoa(JSON.stringify(shareableRecipe));
+      },
+      importRecipe: (sharedRecipe) => {
+        if (!sharedRecipe.name || !sharedRecipe.author) return;
+        set((state) => ({
+          recipes: [...state.recipes, {
+            ...sharedRecipe,
+            id: Date.now(),
+            isFavorite: false,
+          }]
+        }));
+      },
     }),
     {
       name: 'user-storage',
