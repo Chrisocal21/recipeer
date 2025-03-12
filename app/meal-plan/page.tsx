@@ -43,7 +43,7 @@ export default function MealPlanPage() {
       days.push(
         <Box
           key={i}
-          p={4}
+          p={{ base: 2, md: 4 }}
           bg={isCurrentWeek ? 'gray.700' : 'gray.800'}
           borderRadius="lg"
           opacity={isCurrentWeek ? 1 : 0.5}
@@ -51,10 +51,10 @@ export default function MealPlanPage() {
           _hover={isCurrentWeek ? { bg: 'gray.600' } : {}}
         >
           <VStack spacing={1}>
-            <Text fontSize="sm" color="gray.400">
+            <Text fontSize={{ base: "xs", md: "sm" }} color="gray.400">
               {format(currentDate, 'EEE')}
             </Text>
-            <Text fontSize="lg" fontWeight="bold">
+            <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold">
               {format(currentDate, 'd')}
             </Text>
           </VStack>
@@ -71,48 +71,61 @@ export default function MealPlanPage() {
 
   return (
     <Container maxW="container.xl" py={8}>
-      <VStack spacing={8} align="stretch">
+      <VStack spacing={{ base: 4, md: 8 }} align="stretch">
         <Title subtitle="Meal Planning" />
         
-        <HStack justify="space-between">
+        <HStack justify="space-between" wrap={{ base: "wrap", md: "nowrap" }}>
           <Button
+            size={{ base: "sm", md: "md" }}
             onClick={() => setSelectedDate(addWeeks(selectedDate, -1))}
+            w={{ base: "full", md: "auto" }}
+            mb={{ base: 2, md: 0 }}
           >
             Previous Week
           </Button>
-          <Text fontSize="lg" fontWeight="bold">
+          <Text fontSize={{ base: "md", md: "lg" }} fontWeight="bold" textAlign="center">
             {format(startDate, 'MMMM yyyy')}
           </Text>
           <Button
+            size={{ base: "sm", md: "md" }}
             onClick={() => setSelectedDate(addWeeks(selectedDate, 1))}
+            w={{ base: "full", md: "auto" }}
           >
             Next Week
           </Button>
         </HStack>
 
         <Grid
-          templateColumns="repeat(7, 1fr)"
-          gap={4}
+          templateColumns={{ 
+            base: "repeat(4, 1fr)", 
+            md: "repeat(7, 1fr)" 
+          }}
+          gap={{ base: 2, md: 4 }}
         >
           {renderCalendarDays()}
         </Grid>
 
-        <Box mt={8}>
+        <Box mt={{ base: 4, md: 8 }}>
           <Title subtitle="My Meal Plans" />
-          <SimpleGrid columns={[1, 2, 3]} spacing={6} mt={4}>
+          <SimpleGrid 
+            columns={{ base: 1, sm: 2, lg: 3 }} 
+            spacing={{ base: 4, md: 6 }} 
+            mt={4}
+          >
             {mealPlans.map((plan) => (
               <Box
                 key={plan.id}
                 bg="gray.800"
-                p={6}
+                p={{ base: 4, md: 6 }}
                 borderRadius="xl"
               >
                 {/* Meal plan cards will go here */}
                 <Button
                   leftIcon={<ViewIcon />}
-                  size="sm"
+                  size={{ base: "sm", md: "md" }}
                   variant="ghost"
                   onClick={() => handleQRCode(`mealplan:${plan.id}`)}
+                  w={{ base: "full", md: "auto" }}
                 >
                   QR Code
                 </Button>
