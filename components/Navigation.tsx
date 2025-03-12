@@ -11,7 +11,8 @@ import {
   Text,
   Icon,
 } from '@chakra-ui/react';
-import { HamburgerIcon, StarIcon, ViewIcon, CalendarIcon, SearchIcon, AddIcon, PhoneIcon, EmailIcon } from '@chakra-ui/icons';
+import { HamburgerIcon, StarIcon, EditIcon, CalendarIcon, CopyIcon, AddIcon, EmailIcon } from '@chakra-ui/icons';
+import { BsCameraFill } from 'react-icons/bs';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -21,12 +22,12 @@ export default function Navigation() {
 
   const menuItems = [
     { href: '/', icon: EmailIcon, label: 'Home', color: 'gray.500' },
-    { href: '/favorites', icon: StarIcon, label: 'Favorites', color: 'yellow.500' },
-    { href: '/groceries', icon: ViewIcon, label: 'Groceries', color: 'green.500' },
-    { href: '/meal-plan', icon: CalendarIcon, label: 'Meal Plan', color: 'blue.500' },
-    { href: '/recipes', icon: SearchIcon, label: 'Recipes', color: 'purple.500' },
-    { href: '/recipes/new', icon: AddIcon, label: 'Create', color: 'orange.500' },
-    { href: '/scan', icon: PhoneIcon, label: 'Scan', color: 'red.500' },
+    { href: '/favorites', icon: StarIcon, label: 'Favorites', color: 'gray.500' },
+    { href: '/groceries', icon: EditIcon, label: 'Groceries', color: 'gray.500' },
+    { href: '/meal-plan', icon: CalendarIcon, label: 'Meal Plan', color: 'gray.500' },
+    { href: '/recipes', icon: CopyIcon, label: 'Recipes', color: 'gray.500' },
+    { href: '/recipes/new', icon: AddIcon, label: 'Create', color: 'gray.500' },
+    { href: '/scan', icon: BsCameraFill, label: 'Scan', color: 'gray.500' },
   ].filter(item => item.href !== pathname);
 
   if (pathname === '/') return null;

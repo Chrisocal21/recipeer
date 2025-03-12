@@ -1,13 +1,14 @@
 'use client';
 
-import { Box, Container, Heading } from '@chakra-ui/react';
+import { Container, VStack } from '@chakra-ui/react';
+import Title from '@/components/Title';
 
 export default function NewRecipePage() {
   return (
     <Container maxW="container.xl" py={8}>
-      <Box as="main" p={8} bg="white" shadow="md" rounded="lg">
-        <Heading>Create New Recipe</Heading>
-      </Box>
+      <VStack spacing={8} align="stretch">
+        <Title subtitle="Create New Recipe" />
+      </VStack>
     </Container>
   );
 }

@@ -13,17 +13,16 @@ export default function Title({ subtitle, ...props }: TitleProps) {
         fontSize={["24px", "28px", "32px"]}
         textAlign="center"
         fontWeight="bold"
-        color="white"
+        color="#4A4A4A"
         {...props}
       >
-        <Text as="span" letterSpacing="0.15em">C O O K </Text>
-        <Text as="span" fontStyle="italic" letterSpacing="0.1em">BASE</Text>
+        <Text as="span" letterSpacing="0.15em">R E C I P E E R</Text>
       </Heading>
       {subtitle && (
         <Heading
           as="h2"
           fontSize={["18px", "20px", "24px"]}
-          color="gray.400"
+          color="gray.500"
           fontWeight="medium"
         >
           {subtitle}

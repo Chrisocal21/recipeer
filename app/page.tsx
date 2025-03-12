@@ -1,7 +1,8 @@
 'use client';
 
-import { Container, SimpleGrid, Heading, Button, Icon, VStack, Text } from '@chakra-ui/react';
-import { StarIcon, ViewIcon, CalendarIcon, SearchIcon, AddIcon, PhoneIcon } from '@chakra-ui/icons';
+import { Container, SimpleGrid, Button, Icon, VStack, Text } from '@chakra-ui/react';
+import { StarIcon, EditIcon, CalendarIcon, CopyIcon, AddIcon } from '@chakra-ui/icons';
+import { BsCameraFill } from 'react-icons/bs';
 import Link from 'next/link';
 import Title from '@/components/Title';
 
@@ -9,52 +10,43 @@ export default function Home() {
   return (
     <Container maxW="container.xl" py={8}>
       <Title mb={8} />
-      <SimpleGrid columns={[2, 3]} spacing={6}>
+      <SimpleGrid columns={[3, 4]} spacing={4} px={[2, 4]}>
         {[
-          { href: '/favorites', icon: StarIcon, label: 'Favorites', bgColor: 'yellow.400' },
-          { href: '/groceries', icon: ViewIcon, label: 'Groceries', bgColor: 'green.400' },
-          { href: '/meal-plan', icon: CalendarIcon, label: 'Meal Plan', bgColor: 'blue.400' },
-          { href: '/recipes', icon: SearchIcon, label: 'Recipes', bgColor: 'purple.400' },
-          { href: '/recipes/new', icon: AddIcon, label: 'Create', bgColor: 'orange.400' },
-          { href: '/scan', icon: PhoneIcon, label: 'Scan', bgColor: 'red.400' },
-        ].map(({ href, icon, label, bgColor }) => (
+          { href: '/favorites', icon: StarIcon, label: 'Favorites', bg: '#F8F9FA', iconColor: '#343A40' },
+          { href: '/groceries', icon: EditIcon, label: 'Groceries', bg: '#F8F9FA', iconColor: '#343A40' },
+          { href: '/meal-plan', icon: CalendarIcon, label: 'Meal Plan', bg: '#F8F9FA', iconColor: '#343A40' },
+          { href: '/recipes', icon: CopyIcon, label: 'Recipes', bg: '#F8F9FA', iconColor: '#343A40' },
+          { href: '/recipes/new', icon: AddIcon, label: 'Create', bg: '#F8F9FA', iconColor: '#343A40' },
+          { href: '/scan', icon: BsCameraFill, label: 'Scan', bg: '#F8F9FA', iconColor: '#343A40' },
+        ].map(({ href, icon, label, bg, iconColor }) => (
           <Link key={href} href={href} style={{ textDecoration: 'none' }}>
             <VStack
               as={Button}
-              h="120px"
+              h="100px"
               w="full"
-              bg={bgColor}
+              bg={bg}
               variant="unstyled"
-              spacing={3}
-              borderRadius="2xl"
-              boxShadow={`
-                0 2px 0 0 ${bgColor},
-                0 4px 6px -1px rgba(0, 0, 0, 0.1),
-                0 2px 4px -1px rgba(0, 0, 0, 0.06),
-                inset 0 1px 0 0 rgba(255, 255, 255, 0.2)
-              `}
+              spacing={2}
+              borderRadius="16px"
+              boxShadow="0 1px 2px rgba(0, 0, 0, 0.04)"
               transition="all 0.2s"
               _hover={{
-                transform: 'translateY(-2px)',
-                boxShadow: `
-                  0 4px 0 0 ${bgColor},
-                  0 8px 8px -4px rgba(0, 0, 0, 0.1),
-                  0 4px 6px -2px rgba(0, 0, 0, 0.05),
-                  inset 0 1px 0 0 rgba(255, 255, 255, 0.2)
-                `
+                transform: 'translateY(-1px)',
+                boxShadow: '0 3px 6px rgba(0, 0, 0, 0.06)'
               }}
               _active={{
                 transform: 'translateY(0)',
-                boxShadow: `
-                  0 1px 0 0 ${bgColor},
-                  0 2px 4px -1px rgba(0, 0, 0, 0.1),
-                  0 1px 2px -1px rgba(0, 0, 0, 0.06),
-                  inset 0 1px 0 0 rgba(255, 255, 255, 0.2)
-                `
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)'
               }}
             >
-              <Icon as={icon} w={8} h={8} color="white" />
-              <Text color="white" fontWeight="semibold">{label}</Text>
+              <Icon as={icon} w={7} h={7} color={iconColor} />
+              <Text 
+                color="gray.700" 
+                fontSize="13px"
+                fontWeight="medium"
+              >
+                {label}
+              </Text>
             </VStack>
           </Link>
         ))}
