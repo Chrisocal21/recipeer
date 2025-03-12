@@ -12,17 +12,30 @@ import {
   Icon,
   Button,
   useToast,
+  useDisclosure,
 } from '@chakra-ui/react';
-import { TimeIcon, StarIcon, AddIcon, ExternalLinkIcon } from '@chakra-ui/icons';
+import { TimeIcon, StarIcon, AddIcon, ExternalLinkIcon, ViewIcon } from '@chakra-ui/icons';
 import Title from '@/components/Title';
 import { useStore } from '@/store/useRecipeStore';
+import { useRouter } from 'next/navigation';  // Changed from 'next/router'
+import { useEffect } from 'react';
+import QRCodeModal from '@/components/QRCodeModal';
 
 export default function RecipeDetailPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const recipe = useStore(state => 
     state.recipes.find(r => r.id === parseInt(params.id))
   );
   const { toggleFavorite, updateGroceryList, getGroceryList } = useStore();
+
+  useEffect(() => {
+    // Wait for hydration before checking recipe
+    if (typeof window !== 'undefined' && !recipe) {
+      router.push('/recipes');
+    }
+  }, [recipe, router]);
 
   const handleAddToGroceryList = () => {
     if (!recipe) return;
@@ -96,9 +109,9 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
         <Box bg="gray.800" p={8} borderRadius="xl" shadow="md">
           <VStack spacing={6} align="stretch">
             {/* Header with buttons */}
-            <HStack justify="space-between">
+            <HStack justify="space-between" align="start">
               <Box>
-                <Text color="gray.400" fontSize="sm">Recipe by Chef</Text>
+                <Text color="gray.400" fontSize="sm">Recipe by {recipe.author}</Text>
               </Box>
               <HStack spacing={4}>
                 <Button
@@ -108,6 +121,14 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
                   onClick={() => toggleFavorite(recipe.id)}
                 >
                   {recipe.isFavorite ? 'Favorited' : 'Add to Favorites'}
+                </Button>
+                <Button
+                  leftIcon={<ViewIcon />}
+                  variant="ghost"
+                  colorScheme="purple"
+                  onClick={onOpen}
+                >
+                  QR Code
                 </Button>
                 <Button
                   leftIcon={<ExternalLinkIcon />}
@@ -210,6 +231,13 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
           </VStack>
         </Box>
       </VStack>
+
+      <QRCodeModal
+        isOpen={isOpen}
+        onClose={onClose}
+        title={`Scan ${recipe.name}`}
+        data={`recipe:${useStore.getState().shareRecipe(recipe.id)}`}
+      />
     </Container>
   );
 }
