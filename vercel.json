@@ -13,6 +13,17 @@
   },
   "alias": ["recipeer.vercel.app"],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    {
+      "source": "/recipes/:id",
+      "destination": "/recipes/[id]"
+    },
+    {
+      "source": "/recipes/share/:shareId",
+      "destination": "/recipes/share/[shareId]"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/$1"
+    }
   ]
 }

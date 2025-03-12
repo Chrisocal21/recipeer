@@ -51,10 +51,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
 
   return (
     <Link 
-      href={{
-        pathname: `/recipes/${recipe.id}`,
-        query: { name: recipe.name }
-      }} 
+      href={`/recipes/${recipe.id}`}
       style={{ textDecoration: 'none' }}
     >
       <Box

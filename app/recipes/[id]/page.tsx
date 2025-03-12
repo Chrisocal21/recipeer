@@ -44,7 +44,7 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
       const newIngredients = recipe.ingredients.split('\n')
         .map(line => line.trim())
         .filter(Boolean)
-        .map(item => `[Recipe ${recipe.id}] ${item}`);
+        .map(item => `[${recipe.name}] ${item}`);
       
       const combinedList = Array.from(new Set([...currentList, ...newIngredients]));
       updateGroceryList(combinedList);
@@ -108,25 +108,30 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
         
         <Box bg="gray.800" p={8} borderRadius="xl" shadow="md">
           <VStack spacing={6} align="stretch">
-            {/* Header with buttons */}
-            <HStack justify="space-between" align="start">
-              <Box>
-                <Text color="gray.400" fontSize="sm">Recipe by {recipe.author}</Text>
-              </Box>
-              <HStack spacing={4}>
+            {/* Header with author and buttons */}
+            <VStack align="stretch" spacing={4}>
+              <Text color="gray.400" fontSize="sm">Recipe by {recipe.author}</Text>
+              <SimpleGrid 
+                columns={{ base: 2, md: 4 }} 
+                spacing={{ base: 2, md: 4 }}
+                w="full"
+              >
                 <Button
                   leftIcon={<StarIcon />}
                   variant="ghost"
                   colorScheme={recipe.isFavorite ? "yellow" : "gray"}
                   onClick={() => toggleFavorite(recipe.id)}
+                  size={{ base: "sm", md: "md" }}
+                  whiteSpace="nowrap"
                 >
-                  {recipe.isFavorite ? 'Favorited' : 'Add to Favorites'}
+                  {recipe.isFavorite ? 'Favorited' : 'Favorite'}
                 </Button>
                 <Button
                   leftIcon={<ViewIcon />}
                   variant="ghost"
                   colorScheme="purple"
                   onClick={onOpen}
+                  size={{ base: "sm", md: "md" }}
                 >
                   QR Code
                 </Button>
@@ -134,18 +139,21 @@ export default function RecipeDetailPage({ params }: { params: { id: string } })
                   leftIcon={<ExternalLinkIcon />}
                   colorScheme="blue"
                   onClick={handleShare}
+                  size={{ base: "sm", md: "md" }}
                 >
-                  Share Recipe
+                  Share
                 </Button>
                 <Button
                   leftIcon={<AddIcon />}
                   colorScheme="teal"
                   onClick={handleAddToGroceryList}
+                  size={{ base: "sm", md: "md" }}
+                  whiteSpace="nowrap"
                 >
-                  Add to Grocery List
+                  Add to List
                 </Button>
-              </HStack>
-            </HStack>
+              </SimpleGrid>
+            </VStack>
 
             <Divider />
 

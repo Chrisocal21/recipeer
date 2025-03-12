@@ -10,12 +10,18 @@ const theme = extendTheme({
     useSystemColorMode: false,
   },
   styles: {
-    global: {
+    global: () => ({
       body: {
         bg: 'gray.900',
         color: 'white',
-      }
-    }
+      },
+      '*::placeholder': {
+        color: 'whiteAlpha.400',
+      },
+      '*, *::before, &::after': {
+        borderColor: 'whiteAlpha.300',
+      },
+    }),
   },
   components: {
     Container: {
@@ -35,7 +41,7 @@ const theme = extendTheme({
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <CacheProvider>
-      <ChakraProvider theme={theme}>
+      <ChakraProvider theme={theme} cssVarsRoot="body">
         {children}
       </ChakraProvider>
     </CacheProvider>

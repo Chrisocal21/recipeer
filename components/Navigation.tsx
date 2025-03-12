@@ -38,25 +38,35 @@ export default function Navigation() {
         aria-label="Menu"
         icon={<HamburgerIcon />}
         position="fixed"
-        bottom="4"
-        left="4"
+        bottom={4}
+        left={4}
         colorScheme="teal"
         size="lg"
         onClick={onOpen}
         borderRadius="full"
-        shadow="xl"
         zIndex={9999}
-        bg="gray.800"
-        color="white"
-        _hover={{ bg: 'gray.700' }}
-        _active={{ bg: 'gray.600' }}
-        border="2px solid"
-        borderColor="teal.500"
-        style={{ position: 'fixed', bottom: '1rem', left: '1rem' }}
+        boxShadow="0 2px 10px rgba(0,0,0,0.3)"
+        _hover={{
+          transform: 'translateY(-2px)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
+        }}
+        _active={{
+          transform: 'translateY(0)',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+        }}
+        transition="all 0.2s"
       />
-      <Drawer placement="left" onClose={onClose} isOpen={isOpen}>
+      <Drawer 
+        placement="left" 
+        onClose={onClose} 
+        isOpen={isOpen}
+      >
         <DrawerOverlay />
-        <DrawerContent bg="gray.800">
+        <DrawerContent 
+          bg="gray.800"
+          borderRightRadius="xl"
+          overflow="hidden"
+        >
           <DrawerBody p={4}>
             <VStack spacing={4} align="stretch" mt={4}>
               {menuItems.map(({ href, icon, label, color }) => (

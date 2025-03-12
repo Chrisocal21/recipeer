@@ -4,6 +4,17 @@ const nextConfig = {
   swcMinify: true,
   images: {
     unoptimized: true
+  },
+  trailingSlash: false,
+  async rewrites() {
+    return {
+      beforeFiles: [
+        {
+          source: '/recipes/:id*',
+          destination: '/recipes/:id*'
+        }
+      ]
+    }
   }
 };
 
