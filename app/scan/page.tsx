@@ -10,70 +10,88 @@ import {
   Center,
   IconButton,
   HStack,
+  Alert,
+  AlertIcon,
 } from '@chakra-ui/react';
-import { CloseIcon, RepeatIcon } from '@chakra-ui/icons';
-import { useEffect, useState } from 'react';
+import { CloseIcon, RepeatIcon, ViewIcon } from '@chakra-ui/icons';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Title from '@/components/Title';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { useStore } from '@/store/useRecipeStore';
+import { decodeQRData } from '@/utils/qrcode';
 
 export default function ScanPage() {
-  const [scanning, setScanning] = useState(false);
-  const [scanner, setScanner] = useState<Html5QrcodeScanner | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [qrScanner, setQrScanner] = useState<Html5Qrcode | null>(null);
+  const scannerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const toast = useToast();
   const importRecipe = useStore(state => state.importRecipe);
 
   useEffect(() => {
-    if (!scanning) return;
+    if (!isScanning || !scannerRef.current) return;
 
-    const qrScanner = new Html5QrcodeScanner('reader', {
-      qrbox: {
-        width: 250,
-        height: 250,
+    const scanner = new Html5Qrcode('qr-reader');
+    setQrScanner(scanner);
+
+    scanner.start(
+      { facingMode: 'environment' }, // Use back camera
+      {
+        fps: 10,
+        qrbox: { width: 250, height: 250 },
       },
-      fps: 10,
-      rememberLastUsedCamera: true,
-      aspectRatio: 1,
-    }, false);
-
-    setScanner(qrScanner);
-
-    qrScanner.render(handleScanSuccess, handleScanError);
+      handleScanSuccess,
+      handleScanError
+    ).catch((err) => {
+      console.error('Scanner start error:', err);
+      toast({
+        title: 'Camera access error',
+        description: 'Please make sure camera permissions are enabled',
+        status: 'error',
+      });
+      setIsScanning(false);
+    });
 
     return () => {
-      if (qrScanner) {
-        qrScanner.clear();
+      if (scanner && scanner.isScanning) {
+        scanner.stop().catch(console.error);
       }
     };
-  }, [scanning]);
+  }, [isScanning]);
 
   const handleScanSuccess = async (decodedText: string) => {
     try {
-      if (decodedText.startsWith('recipe:')) {
-        const recipeData = JSON.parse(atob(decodedText.replace('recipe:', '')));
-        await importRecipe(recipeData);
+      if (qrScanner) {
+        await qrScanner.stop();
+      }
+      setIsScanning(false);
+
+      const { type, data } = decodeQRData(decodedText);
+
+      if (type === 'recipe') {
+        await importRecipe(data);
         toast({
-          title: 'Recipe imported successfully!',
-          description: `Added "${recipeData.name}" to your recipes`,
+          title: 'Recipe found!',
+          description: `Added "${data.name}" to your collection`,
           status: 'success',
           duration: 3000,
         });
         router.push('/recipes');
-      } else if (decodedText.startsWith('mealplan:')) {
-        // Handle meal plan import
-        router.push(`/meal-plan/share/${decodedText.replace('mealplan:', '')}`);
+      } else if (type === 'mealplan') {
+        router.push(`/meal-plan/share/${data}`);
       } else {
-        throw new Error('Invalid QR code');
+        throw new Error('Invalid QR code format');
       }
     } catch (error) {
       toast({
         title: 'Invalid QR Code',
-        description: 'This QR code is not a valid recipe or meal plan',
+        description: 'This QR code is not from Recipeer',
         status: 'error',
         duration: 3000,
       });
+      // Restart scanning after error
+      setIsScanning(true);
     }
   };
 
@@ -81,59 +99,57 @@ export default function ScanPage() {
     console.warn(error);
   };
 
-  const stopScanning = () => {
-    if (scanner) {
-      scanner.clear();
+  const stopScanner = () => {
+    if (qrScanner && qrScanner.isScanning) {
+      qrScanner.stop().then(() => {
+        setIsScanning(false);
+        setQrScanner(null);
+      }).catch(console.error);
     }
-    setScanning(false);
-  };
-
-  const restartScanning = () => {
-    stopScanning();
-    setScanning(true);
   };
 
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
-        <Title subtitle="Scan Recipe" />
+        <Title subtitle="Scan Recipe or Meal Plan" />
         
         <Box bg="gray.800" p={6} borderRadius="xl">
-          {!scanning ? (
-            <Button 
-              onClick={() => setScanning(true)} 
-              colorScheme="teal" 
-              size="lg" 
-              w="full"
-            >
-              Start Camera
-            </Button>
+          {!isScanning ? (
+            <VStack spacing={4}>
+              <Button 
+                onClick={() => setIsScanning(true)} 
+                colorScheme="teal" 
+                size="lg" 
+                leftIcon={<ViewIcon />}
+              >
+                Start Camera
+              </Button>
+              <Alert status="info" borderRadius="md">
+                <AlertIcon />
+                Point your camera at a Recipeer QR code to import recipes or meal plans
+              </Alert>
+            </VStack>
           ) : (
             <VStack spacing={4}>
               <Box 
-                id="reader" 
-                bg="black" 
-                borderRadius="lg"
-                overflow="hidden"
+                id="qr-reader" 
+                ref={scannerRef}
+                w="100%"
+                maxW="400px"
+                h="400px"
                 position="relative"
+                overflow="hidden"
+                borderRadius="lg"
+                bg="black"
               />
-              <HStack>
-                <IconButton
-                  aria-label="Stop scanning"
-                  icon={<CloseIcon />}
-                  onClick={stopScanning}
-                  colorScheme="red"
-                />
-                <IconButton
-                  aria-label="Restart scanning"
-                  icon={<RepeatIcon />}
-                  onClick={restartScanning}
-                  colorScheme="blue"
-                />
-              </HStack>
-              <Text color="gray.400" fontSize="sm">
-                Position the QR code within the frame
-              </Text>
+              <Button
+                onClick={stopScanner}
+                colorScheme="red"
+                size="md"
+                leftIcon={<CloseIcon />}
+              >
+                Stop Scanning
+              </Button>
             </VStack>
           )}
         </Box>

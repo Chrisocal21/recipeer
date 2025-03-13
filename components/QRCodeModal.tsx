@@ -13,6 +13,7 @@ import {
 } from '@chakra-ui/react';
 import { DownloadIcon } from '@chakra-ui/icons';
 import QRCodeDisplay from './QRCodeDisplay';
+import { generateQRCode } from '@/utils/qrcode';
 
 interface QRCodeModalProps {
   isOpen: boolean;
@@ -55,11 +56,5 @@ export default function QRCodeModal({ isOpen, onClose, title, data }: QRCodeModa
       </ModalContent>
     </Modal>
   );
-}
-async function generateQRCode(data: string): Promise<string> {
-    const canvas = document.createElement('canvas');
-    const QRCode = (await import('qrcode')).default;
-    await QRCode.toCanvas(canvas, data);
-    return canvas.toDataURL('image/png');
 }
 

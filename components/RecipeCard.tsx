@@ -1,7 +1,7 @@
 'use client';
 
-import { Box, Heading, Text, VStack, Icon, HStack, Button, useToast, SimpleGrid } from '@chakra-ui/react';
-import { StarIcon, TimeIcon } from '@chakra-ui/icons';
+import { Box, Heading, Text, VStack, Icon, HStack, Button, useToast, SimpleGrid, IconButton } from '@chakra-ui/react';
+import { StarIcon, TimeIcon, DeleteIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import { useStore } from '@/store/useRecipeStore';
 
@@ -19,13 +19,26 @@ export interface RecipeCardProps {
 
 export default function RecipeCard({ recipe }: RecipeCardProps) {
   const toast = useToast();
-  const { toggleFavorite } = useStore(state => ({
+  const { toggleFavorite, deleteRecipe } = useStore(state => ({
     toggleFavorite: state.toggleFavorite,
+    deleteRecipe: state.deleteRecipe,
   }));
 
   const handleFavoriteClick = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation
     toggleFavorite(recipe.id);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation
+    if (window.confirm('Are you sure you want to delete this recipe?')) {
+      deleteRecipe(recipe.id);
+      toast({
+        title: 'Recipe deleted',
+        status: 'success',
+        duration: 2000,
+      });
+    }
   };
 
   return (
@@ -47,16 +60,26 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
           <Heading size="md" color="white" noOfLines={1}>{recipe.name}</Heading>
           <Text color="gray.400" noOfLines={2}>{recipe.description}</Text>
           <HStack justify="space-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleFavoriteClick}
-              color={recipe.isFavorite ? "yellow.400" : "gray.400"}
-              _hover={{ color: "yellow.300" }}
-              leftIcon={<StarIcon />}
-            >
-              {recipe.isFavorite ? 'Saved' : 'Save'}
-            </Button>
+            <HStack spacing={2}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleFavoriteClick}
+                color={recipe.isFavorite ? "yellow.400" : "gray.400"}
+                _hover={{ color: "yellow.300" }}
+                leftIcon={<StarIcon />}
+              >
+                {recipe.isFavorite ? 'Saved' : 'Save'}
+              </Button>
+              <IconButton
+                aria-label="Delete recipe"
+                icon={<DeleteIcon />}
+                variant="ghost"
+                size="sm"
+                colorScheme="red"
+                onClick={handleDelete}
+              />
+            </HStack>
             <HStack color="blue.400">
               <Icon as={TimeIcon} />
               <Text fontSize="sm">30 minutes</Text>

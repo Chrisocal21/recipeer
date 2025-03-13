@@ -1,6 +1,23 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+export interface Recipe {
+    name: string;
+    description: string;
+    ingredients: string;
+    instructions: string;
+    originStory?: string;
+    chefNotes?: string;
+    prepTime: number;
+    cookTime: number;
+    nutrition: {
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+    };
+    author: string;
+}
 import { useStore } from '@/store/useRecipeStore';
 import {
   Container,
@@ -21,14 +38,58 @@ import {
   NumberIncrementStepper,
   NumberDecrementStepper,
   useToast,
+  HStack,
+  Text,
 } from '@chakra-ui/react';
+import { AttachmentIcon } from '@chakra-ui/icons';
 import Title from '@/components/Title';
+import { useState, useRef } from 'react';
 
 export default function NewRecipeFormPage() {
   const router = useRouter();
   const addRecipe = useStore(state => state.addRecipe);
   const toast = useToast();
+  const [formData, setFormData] = useState<Partial<Recipe>>({});
+  const [isProcessing, setIsProcessing] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const parseRecipeText = (text: string): Partial<Recipe> => {
+    // Basic implementation - you can enhance this based on your needs
+    return {
+      name: '',
+      description: text,
+      ingredients: '',
+      instructions: '',
+    };
+  };
   
+  const handleFileImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      
+      setIsProcessing(true);
+      try {
+        const text = await file.text();
+        const recipeData = parseRecipeText(text);
+        setFormData(recipeData);
+      toast({
+        title: 'Recipe imported successfully',
+        status: 'success',
+      });
+    } catch (error) {
+      toast({
+        title: 'Import failed',
+        description: error instanceof Error ? error.message : 'Could not process file',
+        status: 'error',
+      });
+    } finally {
+      setIsProcessing(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -50,6 +111,7 @@ export default function NewRecipeFormPage() {
           fat: Number(formData.get('fat')) || 0,
         },
         author: formData.get('author') as string,
+        lastModified: new Date().getTime(),
       };
       
       addRecipe(recipe);
@@ -73,6 +135,31 @@ export default function NewRecipeFormPage() {
       <VStack spacing={8} align="stretch">
         <Title subtitle="Create New Recipe" />
         
+        {/* Add Import Button */}
+        <Box bg="gray.700" p={4} borderRadius="xl">
+          <HStack spacing={4}>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileImport}
+              accept=".txt,.doc,.docx,.rtf"
+              style={{ display: 'none' }}
+            />
+            <Button
+              leftIcon={<AttachmentIcon />}
+              onClick={() => fileInputRef.current?.click()}
+              isLoading={isProcessing}
+              loadingText="Processing..."
+              colorScheme="purple"
+            >
+              Import Recipe File
+            </Button>
+            <Text color="gray.400" fontSize="sm">
+              Supported formats: .txt, .doc, .docx, .rtf
+            </Text>
+          </HStack>
+        </Box>
+
         <Box as="form" bg="gray.800" p={8} borderRadius="xl" shadow="md" onSubmit={handleSubmit}>
           <VStack spacing={8} align="stretch">
             <FormControl isRequired>

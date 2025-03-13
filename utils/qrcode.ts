@@ -18,3 +18,17 @@ export const generateQRCode = async (data: string): Promise<string> => {
     throw error;
   }
 };
+
+export const decodeQRData = (data: string) => {
+  const [type, encodedData] = data.split(':');
+  if (!type || !encodedData) {
+    throw new Error('Invalid QR code format');
+  }
+
+  try {
+    const decodedData = JSON.parse(atob(encodedData));
+    return { type, data: decodedData };
+  } catch (error) {
+    throw new Error('Failed to decode QR data');
+  }
+};

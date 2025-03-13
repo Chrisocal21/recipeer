@@ -1,7 +1,7 @@
 'use client';
 
 import { Container, VStack, SimpleGrid, Box, Heading, Text, Button, Icon } from '@chakra-ui/react';
-import { EditIcon, CalendarIcon } from '@chakra-ui/icons';
+import { EditIcon, CalendarIcon, StarIcon } from '@chakra-ui/icons';
 import Link from 'next/link';
 import Title from '@/components/Title';
 
@@ -11,7 +11,7 @@ export default function NewRecipePage() {
       <VStack spacing={8} align="stretch">
         <Title subtitle="What would you like to create?" />
         
-        <SimpleGrid columns={[1, null, 2]} spacing={6}>
+        <SimpleGrid columns={[1, null, 3]} spacing={6}>
           <Link href="/recipes/new/recipe" style={{ textDecoration: 'none' }}>
             <Box
               p={8}
@@ -45,6 +45,25 @@ export default function NewRecipePage() {
                 <Text color="gray.400">
                   Plan your meals for the week. Choose from your saved recipes,
                   organize by day, and generate shopping lists automatically.
+                </Text>
+              </VStack>
+            </Box>
+          </Link>
+
+          <Link href="/recipes/new/enhance" style={{ textDecoration: 'none' }}>
+            <Box
+              p={8}
+              bg="gray.800"
+              borderRadius="xl"
+              _hover={{ transform: 'translateY(-4px)', shadow: 'xl' }}
+              transition="all 0.2s"
+            >
+              <VStack spacing={4} align="start">
+                <Icon as={StarIcon} w={8} h={8} color="purple.400" />
+                <Heading size="md" color="white">AI Recipe Enhancement</Heading>
+                <Text color="gray.400">
+                  Let AI suggest recipes based on your ingredients. Enter what you have,
+                  and get creative recipe suggestions that match our format.
                 </Text>
               </VStack>
             </Box>

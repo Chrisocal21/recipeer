@@ -34,7 +34,28 @@ const theme = extendTheme({
       defaultProps: {
         colorScheme: 'teal',
       }
-    }
+    },
+    Input: {
+      defaultProps: {
+        focusBorderColor: 'teal.200',
+      },
+      variants: {
+        outline: {
+          field: {
+            bg: 'gray.700',
+            borderColor: 'whiteAlpha.300',
+            color: 'white',
+            _hover: {
+              borderColor: 'whiteAlpha.400',
+            },
+            _focus: {
+              borderColor: 'teal.200',
+              bg: 'gray.800',
+            },
+          },
+        },
+      },
+    },
   }
 });
 

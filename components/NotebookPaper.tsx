@@ -5,10 +5,17 @@ import {
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody,
   Checkbox, Text, Divider, IconButton, Heading, BoxProps,
   Menu, MenuButton, MenuList, MenuItem, MenuDivider,
-  AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay
+  AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay,
+  Input as ChakraInput,
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+  PopoverBody,
+  PopoverArrow,
+  Textarea,
 } from '@chakra-ui/react';
-import { DeleteIcon, ChevronRightIcon, AddIcon, EditIcon, SettingsIcon } from '@chakra-ui/icons';
-import React, { useEffect, useState } from 'react';
+import { DeleteIcon, ChevronRightIcon, AddIcon, EditIcon, SettingsIcon, CloseIcon } from '@chakra-ui/icons';
+import React, { useEffect, useState, useRef } from 'react';
 import { useStore } from '@/store/useRecipeStore';
 
 interface NotebookPaperProps extends BoxProps {
@@ -27,45 +34,97 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { isOpen: isAlertOpen, onOpen: onAlertOpen, onClose: onAlertClose } = useDisclosure();
   const cancelRef = React.useRef<HTMLButtonElement>(null);
+  const [isNewListOpen, setIsNewListOpen] = useState(false);
+  const [newListName, setNewListName] = useState('');
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editableItems, setEditableItems] = useState<string[]>([]);
+  const [activeList, setActiveList] = useState<string | null>(null);
+  const [isPromptOpen, setIsPromptOpen] = useState(false);
 
   useEffect(() => {
-    const savedItems = getGroceryList();
-    setItems([...savedItems, ...Array(20 - savedItems.length).fill('')]);
+    try {
+      const savedItems = getGroceryList();
+      // Remove the array padding to avoid length issues on mobile
+      setItems(savedItems);
+    } catch (error) {
+      console.error('Error loading grocery list:', error);
+      setItems([]);
+    }
   }, []);
 
   const handleChange = (index: number, value: string) => {
     const newItems = [...items];
     newItems[index] = value;
     const validItems = newItems.filter(Boolean);
-    setItems([...validItems, ...Array(20 - validItems.length).fill('')]);
+    setItems(validItems);
     updateGroceryList(validItems);
   };
 
   const handleClear = () => {
-    setItems(Array(20).fill(''));
+    setItems([]);
     clearGroceryList();
   };
 
-  const handleAddManualItem = (value: string) => {
+  const handleAddItem = (value: string) => {
     if (!value.trim()) return;
-    const newItems = [...items];
-    newItems.push(`[Other Items] ${value.trim()}`);
-    setItems(newItems);
-    updateGroceryList(newItems.filter(Boolean));
-  };
 
-  const handleAddNewList = () => {
-    const listName = prompt('Enter a name for your new list:');
-    if (listName) {
-      updateGroceryList([`[${listName}] `]);
+    // If no list exists, prompt for list name
+    if (Object.keys(groupedItems).length === 0) {
+      const createList = window.confirm('Create a new list?');
+      if (createList) {
+        const listName = window.prompt('Enter a name for your new list:');
+        if (listName?.trim()) {
+          const newItems = [...items];
+          newItems.push(`[${listName}] ${value.trim()}`);
+          setItems(newItems);
+          updateGroceryList(newItems);
+          setActiveList(listName);
+        }
+      }
+      return;
+    }
+
+    // If no active list, prompt to select one
+    if (!activeList) {
+      const listKeys = Object.keys(groupedItems);
+      const listName = window.prompt(
+        'Add to which list?\n\nAvailable lists:\n' + listKeys.join('\n') + '\n\nOr enter a new list name:'
+      );
+      if (listName?.trim()) {
+        const newItems = [...items];
+        newItems.push(`[${listName}] ${value.trim()}`);
+        setItems(newItems);
+        updateGroceryList(newItems);
+        setActiveList(listName);
+      }
+    } else {
+      // Add to active list
+      const newItems = [...items];
+      newItems.push(`[${activeList}] ${value.trim()}`);
+      setItems(newItems);
+      updateGroceryList(newItems);
     }
   };
 
+  const handleNewList = () => {
+    if (!newListName.trim()) return;
+    const newItems = [...items];
+    newItems.push(`[${newListName}] `);
+    setItems(newItems);
+    updateGroceryList(newItems.filter(Boolean));
+    setNewListName('');
+    setIsNewListOpen(false);
+  };
+
   const handleEditList = (title: string) => {
-    const newName = prompt('Enter a new name for this list:', title);
+    const currentItems = items.filter(item => item.includes(`[${title}]`));
+    if (!currentItems.length) return;
+
+    const newName = window.prompt('Enter a new name for this list:', title);
     if (newName && newName !== title) {
-      const newItems = items.map(item => 
-        item.startsWith(`[${title}]`) ? item.replace(`[${title}]`, `[${newName}]`) : item
+      const newItems = items.map(item =>
+        item.includes(`[${title}]`) ? item.replace(`[${title}]`, `[${newName}]`) : item
       );
       setItems(newItems);
       updateGroceryList(newItems);
@@ -111,6 +170,31 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
     onClose();
   };
 
+  const handleEditItems = () => {
+    setEditableItems([...selectedGroup]);
+    setIsEditMode(true);
+  };
+
+  const handleSaveEdit = () => {
+    const newItems = [...items];
+    const groupIndex = items.findIndex(item => item.includes(`[${selectedTitle}]`));
+    newItems[groupIndex] = `[${selectedTitle}] ${editableItems.join(', ')}`;
+    setItems(newItems);
+    updateGroceryList(newItems);
+    setIsEditMode(false);
+  };
+
+  const handleCreateList = () => {
+    const listName = window.prompt('Enter a name for your new list:');
+    if (!listName?.trim()) return;
+    
+    const newItems = [...items];
+    newItems.push(`[${listName}] `);
+    setItems(newItems);
+    updateGroceryList(newItems.filter(Boolean));
+    setActiveList(listName);
+  };
+
   return (
     <Box {...props}>
       <VStack spacing={4}>
@@ -118,24 +202,19 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
           <Menu>
             <MenuButton
               as={IconButton}
-              icon={<SettingsIcon />}
-              variant="ghost"
-              colorScheme="gray"
+              aria-label="Add item"
+              icon={<AddIcon />}
+              colorScheme="teal"
             />
-            <MenuList>
-              <MenuItem icon={<AddIcon />} onClick={handleAddNewList}>
+            <MenuList bg="gray.700">
+              <MenuItem
+                icon={<AddIcon />}
+                onClick={handleCreateList}
+                _hover={{ bg: 'gray.600' }}
+                color="white"
+              >
                 Create New List
               </MenuItem>
-              <MenuDivider />
-              {Object.keys(groupedItems).map(title => (
-                <MenuItem
-                  key={title}
-                  icon={<EditIcon />}
-                  onClick={() => handleEditList(title)}
-                >
-                  Edit "{title}"
-                </MenuItem>
-              ))}
             </MenuList>
           </Menu>
           <Button
@@ -149,35 +228,6 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
           </Button>
         </HStack>
 
-        {/* Add Item Section */}
-        <Box w="100%">
-          <HStack mb={2}>
-            <Heading size="sm" color="gray.600">Add Item</Heading>
-          </HStack>
-          <HStack>
-            <Input
-              placeholder="Add an item to your list..."
-              bg="white"
-              onKeyPress={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddManualItem((e.target as HTMLInputElement).value);
-                  (e.target as HTMLInputElement).value = '';
-                }
-              }}
-            />
-            <IconButton
-              aria-label="Add item"
-              icon={<AddIcon />}
-              colorScheme="teal"
-              onClick={(e) => {
-                const input = e.currentTarget.previousSibling as HTMLInputElement;
-                handleAddManualItem(input.value);
-                input.value = '';
-              }}
-            />
-          </HStack>
-        </Box>
-
         <Divider />
 
         {/* Recipe Groups */}
@@ -188,19 +238,19 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
               key={title}
               w="100%"
               p={3}
-              bg="white"
+              bg="gray.700"
               borderRadius="md"
               cursor="pointer"
               onClick={() => handleItemClick(title, groupItems)}
-              _hover={{ bg: 'gray.50' }}
+              _hover={{ bg: 'gray.600' }}
             >
               <HStack justify="space-between">
-                <Text fontWeight="bold" color="gray.700">
+                <Text fontWeight="bold" color="white">
                   {title} ({groupItems.length})
                 </Text>
-                <ChevronRightIcon />
+                <ChevronRightIcon color="white" />
               </HStack>
-              <Text color="gray.600" noOfLines={1}>
+              <Text color="gray.300" noOfLines={1}>
                 {groupItems.map(item => item.replace('✓ ', '')).join(', ')}
               </Text>
             </Box>
@@ -208,42 +258,71 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
 
         <Modal isOpen={isOpen} onClose={onClose} size="md">
           <ModalOverlay />
-          <ModalContent bg="white">
+          <ModalContent bg="gray.800">
             <ModalHeader>
               <HStack justify="space-between" align="center">
-                <Text color="gray.700">{selectedTitle}</Text>
-                <IconButton
-                  aria-label="Delete list"
-                  icon={<DeleteIcon />}
-                  colorScheme="red"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteGroup(selectedTitle)}
-                />
+                <Text color="white">{selectedTitle}</Text>
+                <HStack>
+                  <IconButton
+                    aria-label="Edit list"
+                    icon={<EditIcon />}
+                    colorScheme="blue"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleEditItems}
+                  />
+                  <IconButton
+                    aria-label="Delete list"
+                    icon={<DeleteIcon />}
+                    colorScheme="red"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteGroup(selectedTitle)}
+                  />
+                </HStack>
               </HStack>
             </ModalHeader>
             <ModalBody pb={6}>
-              <VStack align="stretch" spacing={2}>
-                {selectedGroup.map((item, index) => (
-                  <Checkbox
-                    key={index}
-                    isChecked={item.startsWith('✓ ')}
-                    onChange={() => handleCheckItem(index)}
-                    colorScheme="teal"
-                    size="lg"
-                    spacing={4}
-                  >
-                    <Text
-                      color="gray.700"
-                      fontSize="lg"
-                      textDecoration={item.startsWith('✓ ') ? 'line-through' : 'none'}
-                      opacity={item.startsWith('✓ ') ? 0.6 : 1}
+              {isEditMode ? (
+                <VStack align="stretch" spacing={4}>
+                  <Textarea
+                    value={editableItems.join('\n')}
+                    onChange={(e) => setEditableItems(e.target.value.split('\n'))}
+                    placeholder="Enter items (one per line)"
+                    minH="200px"
+                    bg="gray.700"
+                    color="white"
+                    _hover={{ bg: 'gray.600' }}
+                    _focus={{ bg: 'gray.600' }}
+                  />
+                  <HStack justify="flex-end">
+                    <Button size="sm" onClick={() => setIsEditMode(false)}>Cancel</Button>
+                    <Button size="sm" colorScheme="teal" onClick={handleSaveEdit}>Save</Button>
+                  </HStack>
+                </VStack>
+              ) : (
+                <VStack align="stretch" spacing={2}>
+                  {selectedGroup.map((item, index) => (
+                    <Checkbox
+                      key={index}
+                      isChecked={item.startsWith('✓ ')}
+                      onChange={() => handleCheckItem(index)}
+                      colorScheme="teal"
+                      size="lg"
+                      spacing={4}
                     >
-                      {item.replace('✓ ', '')}
-                    </Text>
-                  </Checkbox>
-                ))}
-              </VStack>
+                      <Text
+                        color="gray.700"
+                        fontSize="lg"
+                        textDecoration={item.startsWith('✓ ') ? 'line-through' : 'none'}
+                        opacity={item.startsWith('✓ ') ? 0.6 : 1}
+                      >
+                        {item.replace('✓ ', '')}
+                      </Text>
+                    </Checkbox>
+                  ))}
+                </VStack>
+              )}
             </ModalBody>
           </ModalContent>
         </Modal>

@@ -20,6 +20,8 @@ export interface Recipe {
   isFavorite: boolean;
   author: string;
   shareId?: string;
+  generated?: boolean;
+  lastModified: number;
 }
 
 interface MealPlan {
@@ -59,7 +61,13 @@ export const useStore = create<UserStore>()(
       mealPlans: [],
       groceryLists: [],
       addRecipe: (recipe) => set((state) => ({
-        recipes: [...state.recipes, { ...recipe, id: Date.now(), isFavorite: false }]
+        recipes: [...state.recipes, {
+          ...recipe,
+          id: Date.now(),
+          isFavorite: false,
+          lastModified: Date.now(),
+          generated: recipe.generated || false
+        }]
       })),
       toggleFavorite: (id) => set((state) => ({
         recipes: state.recipes.map(recipe =>
