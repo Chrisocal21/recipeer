@@ -41,7 +41,8 @@ import {
   HStack,
   Text,
 } from '@chakra-ui/react';
-import { AttachmentIcon } from '@chakra-ui/icons';
+import { AttachmentIcon, DownloadIcon, ExternalLinkIcon } from '@chakra-ui/icons';
+import { FaGoogle, FaDropbox } from 'react-icons/fa';
 import Title from '@/components/Title';
 import { useState, useRef } from 'react';
 
@@ -90,6 +91,22 @@ export default function NewRecipeFormPage() {
     }
   };
 
+  const handleGoogleImport = async () => {
+    // Google Drive Picker API implementation
+    toast({
+      title: 'Google Docs import coming soon',
+      status: 'info',
+    });
+  };
+
+  const handleDropboxImport = async () => {
+    // Dropbox Chooser API implementation
+    toast({
+      title: 'Dropbox import coming soon',
+      status: 'info',
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -135,29 +152,62 @@ export default function NewRecipeFormPage() {
       <VStack spacing={8} align="stretch">
         <Title subtitle="Create New Recipe" />
         
-        {/* Add Import Button */}
+        {/* Update Import Section */}
         <Box bg="gray.700" p={4} borderRadius="xl">
-          <HStack spacing={4}>
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileImport}
-              accept=".txt,.doc,.docx,.rtf"
-              style={{ display: 'none' }}
-            />
-            <Button
-              leftIcon={<AttachmentIcon />}
-              onClick={() => fileInputRef.current?.click()}
-              isLoading={isProcessing}
-              loadingText="Processing..."
-              colorScheme="purple"
-            >
-              Import Recipe File
-            </Button>
-            <Text color="gray.400" fontSize="sm">
-              Supported formats: .txt, .doc, .docx, .rtf
+          <VStack spacing={4}>
+            <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4} w="full">
+              <HStack w="full">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileImport}
+                  accept=".txt,.doc,.docx,.rtf,.gdoc"
+                  style={{ display: 'none' }}
+                />
+                <Button
+                  leftIcon={<AttachmentIcon />}
+                  onClick={() => fileInputRef.current?.click()}
+                  isLoading={isProcessing}
+                  loadingText="Processing..."
+                  colorScheme="purple"
+                  w="full"
+                  size={{ base: "md", md: "lg" }}
+                >
+                  <Text noOfLines={1}>
+                    Import Local File
+                  </Text>
+                </Button>
+              </HStack>
+
+              <Button
+                leftIcon={<FaGoogle />}
+                onClick={handleGoogleImport}
+                colorScheme="red"
+                w="full"
+                size={{ base: "md", md: "lg" }}
+              >
+                <Text noOfLines={1}>
+                  Import from Google
+                </Text>
+              </Button>
+
+              <Button
+                leftIcon={<FaDropbox />}
+                onClick={handleDropboxImport}
+                colorScheme="blue"
+                w="full"
+                size={{ base: "md", md: "lg" }}
+              >
+                <Text noOfLines={1}>
+                  Import from Dropbox
+                </Text>
+              </Button>
+            </SimpleGrid>
+
+            <Text color="gray.400" fontSize="sm" textAlign="center">
+              Supported formats: Text, Word, Google Docs
             </Text>
-          </HStack>
+          </VStack>
         </Box>
 
         <Box as="form" bg="gray.800" p={8} borderRadius="xl" shadow="md" onSubmit={handleSubmit}>
