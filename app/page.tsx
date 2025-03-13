@@ -10,7 +10,13 @@ export default function Home() {
   return (
     <Container maxW="container.xl" py={8}>
       <Title mb={8} />
-      <SimpleGrid columns={[3, 4]} spacing={4} px={[2, 4]}>
+      <SimpleGrid 
+        columns={2} 
+        spacing={{ base: 4, md: 6 }}
+        px={{ base: 2, md: 8 }}
+        maxW="600px"
+        mx="auto"
+      >
         {[
           { href: '/favorites', icon: StarIcon, label: 'Favorites', bg: '#F8F9FA', iconColor: '#343A40' },
           { href: '/groceries', icon: EditIcon, label: 'Groceries', bg: '#F8F9FA', iconColor: '#343A40' },
@@ -22,27 +28,27 @@ export default function Home() {
           <Link key={href} href={href} style={{ textDecoration: 'none' }}>
             <VStack
               as={Button}
-              h="100px"
+              h={{ base: "120px", md: "140px" }}
               w="full"
               bg={bg}
               variant="unstyled"
-              spacing={2}
-              borderRadius="16px"
+              spacing={3}
+              borderRadius="xl"
               boxShadow="0 1px 2px rgba(0, 0, 0, 0.04)"
               transition="all 0.2s"
               _hover={{
-                transform: 'translateY(-1px)',
-                boxShadow: '0 3px 6px rgba(0, 0, 0, 0.06)'
+                transform: 'translateY(-2px)',
+                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)'
               }}
               _active={{
                 transform: 'translateY(0)',
                 boxShadow: '0 1px 2px rgba(0, 0, 0, 0.04)'
               }}
             >
-              <Icon as={icon} w={7} h={7} color={iconColor} />
+              <Icon as={icon} w={8} h={8} color={iconColor} />
               <Text 
                 color="gray.700" 
-                fontSize="13px"
+                fontSize={{ base: "14px", md: "16px" }}
                 fontWeight="medium"
               >
                 {label}

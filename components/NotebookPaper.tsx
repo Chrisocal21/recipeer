@@ -3,9 +3,11 @@
 import {
   Box, Input, VStack, Button, HStack, useDisclosure,
   Modal, ModalOverlay, ModalContent, ModalHeader, ModalBody,
-  Checkbox, Text, Divider, IconButton, Heading, BoxProps
+  Checkbox, Text, Divider, IconButton, Heading, BoxProps,
+  Menu, MenuButton, MenuList, MenuItem, MenuDivider,
+  AlertDialog, AlertDialogBody, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogOverlay
 } from '@chakra-ui/react';
-import { DeleteIcon, ChevronRightIcon, AddIcon } from '@chakra-ui/icons';
+import { DeleteIcon, ChevronRightIcon, AddIcon, EditIcon, SettingsIcon } from '@chakra-ui/icons';
 import React, { useEffect, useState } from 'react';
 import { useStore } from '@/store/useRecipeStore';
 
@@ -23,6 +25,8 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
   const [selectedGroup, setSelectedGroup] = useState<string[]>([]);
   const [selectedTitle, setSelectedTitle] = useState('');
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { isOpen: isAlertOpen, onOpen: onAlertOpen, onClose: onAlertClose } = useDisclosure();
+  const cancelRef = React.useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const savedItems = getGroceryList();
@@ -48,6 +52,24 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
     newItems.push(`[Other Items] ${value.trim()}`);
     setItems(newItems);
     updateGroceryList(newItems.filter(Boolean));
+  };
+
+  const handleAddNewList = () => {
+    const listName = prompt('Enter a name for your new list:');
+    if (listName) {
+      updateGroceryList([`[${listName}] `]);
+    }
+  };
+
+  const handleEditList = (title: string) => {
+    const newName = prompt('Enter a new name for this list:', title);
+    if (newName && newName !== title) {
+      const newItems = items.map(item => 
+        item.startsWith(`[${title}]`) ? item.replace(`[${title}]`, `[${newName}]`) : item
+      );
+      setItems(newItems);
+      updateGroceryList(newItems);
+    }
   };
 
   // Group items by recipe and filter out "Other Items"
@@ -92,20 +114,45 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
   return (
     <Box {...props}>
       <VStack spacing={4}>
+        <HStack w="100%" justify="space-between">
+          <Menu>
+            <MenuButton
+              as={IconButton}
+              icon={<SettingsIcon />}
+              variant="ghost"
+              colorScheme="gray"
+            />
+            <MenuList>
+              <MenuItem icon={<AddIcon />} onClick={handleAddNewList}>
+                Create New List
+              </MenuItem>
+              <MenuDivider />
+              {Object.keys(groupedItems).map(title => (
+                <MenuItem
+                  key={title}
+                  icon={<EditIcon />}
+                  onClick={() => handleEditList(title)}
+                >
+                  Edit "{title}"
+                </MenuItem>
+              ))}
+            </MenuList>
+          </Menu>
+          <Button
+            leftIcon={<DeleteIcon />}
+            colorScheme="red"
+            variant="ghost"
+            size="sm"
+            onClick={onAlertOpen}
+          >
+            Clear All
+          </Button>
+        </HStack>
+
         {/* Add Item Section */}
         <Box w="100%">
           <HStack mb={2}>
             <Heading size="sm" color="gray.600">Add Item</Heading>
-            <Button
-              leftIcon={<DeleteIcon />}
-              colorScheme="red"
-              variant="ghost"
-              size="sm"
-              onClick={handleClear}
-              ml="auto"
-            >
-              Clear All
-            </Button>
           </HStack>
           <HStack>
             <Input
@@ -158,49 +205,79 @@ export default function NotebookPaper({ ...props }: NotebookPaperProps) {
               </Text>
             </Box>
           ))}
-      </VStack>
 
-      <Modal isOpen={isOpen} onClose={onClose} size="md">
-        <ModalOverlay />
-        <ModalContent bg="white">
-          <ModalHeader>
-            <HStack justify="space-between" align="center">
-              <Text color="gray.700">{selectedTitle}</Text>
-              <IconButton
-                aria-label="Delete list"
-                icon={<DeleteIcon />}
-                colorScheme="red"
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteGroup(selectedTitle)}
-              />
-            </HStack>
-          </ModalHeader>
-          <ModalBody pb={6}>
-            <VStack align="stretch" spacing={2}>
-              {selectedGroup.map((item, index) => (
-                <Checkbox
-                  key={index}
-                  isChecked={item.startsWith('✓ ')}
-                  onChange={() => handleCheckItem(index)}
-                  colorScheme="teal"
-                  size="lg"
-                  spacing={4}
-                >
-                  <Text
-                    color="gray.700"
-                    fontSize="lg"
-                    textDecoration={item.startsWith('✓ ') ? 'line-through' : 'none'}
-                    opacity={item.startsWith('✓ ') ? 0.6 : 1}
+        <Modal isOpen={isOpen} onClose={onClose} size="md">
+          <ModalOverlay />
+          <ModalContent bg="white">
+            <ModalHeader>
+              <HStack justify="space-between" align="center">
+                <Text color="gray.700">{selectedTitle}</Text>
+                <IconButton
+                  aria-label="Delete list"
+                  icon={<DeleteIcon />}
+                  colorScheme="red"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleDeleteGroup(selectedTitle)}
+                />
+              </HStack>
+            </ModalHeader>
+            <ModalBody pb={6}>
+              <VStack align="stretch" spacing={2}>
+                {selectedGroup.map((item, index) => (
+                  <Checkbox
+                    key={index}
+                    isChecked={item.startsWith('✓ ')}
+                    onChange={() => handleCheckItem(index)}
+                    colorScheme="teal"
+                    size="lg"
+                    spacing={4}
                   >
-                    {item.replace('✓ ', '')}
-                  </Text>
-                </Checkbox>
-              ))}
-            </VStack>
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+                    <Text
+                      color="gray.700"
+                      fontSize="lg"
+                      textDecoration={item.startsWith('✓ ') ? 'line-through' : 'none'}
+                      opacity={item.startsWith('✓ ') ? 0.6 : 1}
+                    >
+                      {item.replace('✓ ', '')}
+                    </Text>
+                  </Checkbox>
+                ))}
+              </VStack>
+            </ModalBody>
+          </ModalContent>
+        </Modal>
+
+        <AlertDialog
+          isOpen={isAlertOpen}
+          leastDestructiveRef={cancelRef}
+          onClose={onAlertClose}
+        >
+          <AlertDialogOverlay>
+            <AlertDialogContent>
+              <AlertDialogHeader>Clear All Lists?</AlertDialogHeader>
+              <AlertDialogBody>
+                This will remove all your shopping lists. This action cannot be undone.
+              </AlertDialogBody>
+              <AlertDialogFooter>
+                <Button ref={cancelRef} onClick={onAlertClose}>
+                  Cancel
+                </Button>
+                <Button 
+                  colorScheme="red" 
+                  onClick={() => {
+                    handleClear();
+                    onAlertClose();
+                  }} 
+                  ml={3}
+                >
+                  Delete All
+                </Button>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialogOverlay>
+        </AlertDialog>
+      </VStack>
     </Box>
   );
 }
