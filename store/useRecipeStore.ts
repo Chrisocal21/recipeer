@@ -22,6 +22,9 @@ export interface Recipe {
   shareId?: string;
   generated?: boolean;
   lastModified: number;
+  rating?: number;
+  reviews?: string[];
+  servings?: number;
 }
 
 interface MealPlan {
@@ -52,6 +55,8 @@ interface UserStore {
   clearGroceryList: () => void;
   shareRecipe: (id: number) => string;
   importRecipe: (sharedRecipe: Omit<Recipe, 'id' | 'isFavorite'>) => void;
+  rateRecipe: (id: number, rating: number, review?: string) => void;
+  scaleRecipe: (id: number, servings: number) => Recipe;
 }
 
 export const useStore = create<UserStore>()(
@@ -117,6 +122,38 @@ export const useStore = create<UserStore>()(
             isFavorite: false,
           }]
         }));
+      },
+      rateRecipe: (id, rating, review) => set(state => ({
+        recipes: state.recipes.map(recipe => 
+          recipe.id === id 
+            ? { 
+                ...recipe, 
+                rating: rating,
+                reviews: review ? [...(recipe.reviews || []), review] : recipe.reviews
+              }
+            : recipe
+        )
+      })),
+      scaleRecipe: (id, newServings) => {
+        const recipe = get().recipes.find(r => r.id === id);
+        if (!recipe || !recipe.servings) throw new Error('Recipe not found or servings not specified');
+        
+        const scaleFactor = newServings / recipe.servings;
+        return {
+          ...recipe,
+          servings: newServings,
+          ingredients: recipe.ingredients
+            .split('\n')
+            .map(line => {
+              const match = line.match(/^([\d.]+)/);
+              if (match) {
+                const num = parseFloat(match[1]);
+                return line.replace(/^[\d.]+/, (num * scaleFactor).toFixed(1));
+              }
+              return line;
+            })
+            .join('\n')
+        };
       },
     }),
     {

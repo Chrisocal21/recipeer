@@ -11,6 +11,8 @@ export interface Recipe {
   description: string;
   imageUrl?: string;
   isFavorite?: boolean;
+  rating?: number;
+  reviews?: number[];
 }
 
 export interface RecipeCardProps {
@@ -59,6 +61,21 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         <VStack align="stretch" spacing={3}>
           <Heading size="md" color="white" noOfLines={1}>{recipe.name}</Heading>
           <Text color="gray.400" noOfLines={2}>{recipe.description}</Text>
+          {recipe.rating && (
+            <HStack spacing={1}>
+              {Array(5).fill('').map((_, i) => (
+                <StarIcon
+                  key={i}
+                  color={i < recipe.rating! ? "yellow.400" : "gray.300"}
+                  w={3}
+                  h={3}
+                />
+              ))}
+              <Text fontSize="sm" color="gray.400">
+                ({recipe.reviews?.length || 0})
+              </Text>
+            </HStack>
+          )}
           <HStack justify="space-between">
             <HStack spacing={2}>
               <Button
